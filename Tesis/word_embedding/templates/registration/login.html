@@ -1,0 +1,44 @@
+
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Iniciar sesión</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+
+<body class="bg-image">
+    <div class="custom-container">
+        <div class="custom-card bg-white">
+            <h2 class="custom-heading text-2xl mb-4 font-bold text-center">Iniciar sesión</h2>
+            <form method="post" id="loginForm">
+                {% csrf_token %}
+                <div class="custom-form-group">
+                    <input type="text" class="custom-form-control" placeholder="Nombre de usuario" name="username">
+                </div>
+                <div class="custom-form-group">
+                    <input type="password" class="custom-form-control" placeholder="Contraseña" name="password">
+                </div>
+                <button type="submit" class="custom-btn">Iniciar sesión</button>
+            </form>
+            
+            <a href="{% url 'index' %}" class="custom-back-link">Regresar</a>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay">
+        <div class="message-box">
+            <p>Por favor, regístrese para iniciar sesión.</p>
+            <button onclick="closeOverlay()">Cerrar</button>
+        </div>
+    </div>
+
+    <script>
+        // Tu script JavaScript
+    </script>
+</body>
+</html>

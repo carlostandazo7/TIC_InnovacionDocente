@@ -1,0 +1,48 @@
+
+:root {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "Nunito", sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.bg-image {
+  background-image: url('{% static "images/backgroundPrincipal.jpg" %}'); /* Ruta relativa a la imagen */
+  background-size: cover;
+  background-position: center;
+  height: 100vh; /* Ajusta la altura según tus necesidades */
+  position: relative;
+}
+
+.bg-image::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Color semitransparente */
+  z-index: -1; /* Posicionar detrás de los demás elementos */
+}
+
+a {
+  color: #4154f1;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #717ff5;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Nunito", sans-serif;
+}
