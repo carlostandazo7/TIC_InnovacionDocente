@@ -1,0 +1,22 @@
+<!-- ver_documentos.html -->
+
+{% extends 'home.html' %}
+
+{% block content %}
+  <div class="container mx-auto mt-8">
+    <h2 class="text-2xl font-bold mb-4">Ver Documentos</h2>
+    
+    {% if documentos %}
+      <ul>
+        {% for documento in documentos %}
+          <li>
+            <strong>{{ documento.archivo.name }}</strong>
+            {# Agrega más detalles o enlaces según sea necesario #}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No hay documentos cargados.</p>
+    {% endif %}
+  </div>
+{% endblock %}

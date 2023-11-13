@@ -1,50 +1,38 @@
+{% load static %}
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
     <title>Home</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    {% load static %}
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css' rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
 </head>
-<body>
-    <div class="sidebar">
-        <div class="sidebar-heading">Barra de navegación</div>
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link" href="#section1">Cargar documentos</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#section2">Modelo Word2Vec</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#section3">Modelo Doc2Vec</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#section4">Exit</a>
-            </li>
-        </ul>
+
+<body class="bg-gray-100">
+
+    <!-- Barra de navegación vertical -->
+    <nav class="bg-gray-800 text-white h-screen w-16 fixed top-0 left-0 flex flex-col items-center">
+        <a href="#home" class="py-2 my-2 hover:bg-gray-600">Home</a>
+        <a href="{% url 'cargar_documentos' %}" class="py-2 my-2 hover:bg-gray-600">Cargar Documentos</a>
+        <a href="{% url 'ver_documentos' %}" class="py-2 my-2 hover:bg-gray-600">Ver Documentos</a>
+        <a href="#word2vec" class="py-2 my-2 hover:bg-gray-600">Modelo Word2Vec</a>
+        <a href="#doc2vec" class="py-2 my-2 hover:bg-gray-600">Modelo Doc2Vec</a>
+        <a href="{% url 'logout' %}" class="py-2 my-2 hover:bg-gray-600">Cerrar Sesión</a>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="ml-16 p-8">
+        <h1 class="text-3xl font-bold mb-4">Bienvenido, {{ user.username }}!</h1>
+
+        <!-- Contenido dinámico -->
+        {% block content %}{% endblock %}
+        
     </div>
 
-    <div class="main-content">
-        <h1 class="mb-4">Word Embedding</h1>
-        <div class="card">
-            <div class="card-body">
-                <h2 class="card-title">Modelo Word2Vec</h2>
-                <p class="card-text">Word2Vec es un modelo de redes neuronales que aprende representaciones vectoriales de palabras a partir de grandes cantidades de texto sin etiquetar. Las representaciones capturan semántica y similitudes entre palabras.</p>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-body">
-                <h2 class="card-title">Modelo Doc2Vec</h2>
-                <p class="card-text">Doc2Vec extiende el modelo Word2Vec para incluir representaciones vectoriales de documentos. Proporciona una forma de representar documentos enteros como vectores, conservando la información contextual.</p>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
+
 </html>
+
 

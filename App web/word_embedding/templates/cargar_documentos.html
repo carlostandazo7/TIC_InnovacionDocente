@@ -1,0 +1,22 @@
+
+{% extends 'home.html' %}
+
+{% block content %}
+  <div class="container mx-auto mt-8">
+    <h2 class="text-2xl font-bold mb-4">Cargar Documentos</h2>
+
+    <form method="post" enctype="multipart/form-data" class="mb-8">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded">Cargar</button>
+  </form>
+
+    {# Mostrar mensajes de éxito o error después de cargar el archivo #}
+    {% if messages %}
+      <div class="bg-green-200 text-green-800 p-3 mb-4">
+        {{ messages }}
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}
+

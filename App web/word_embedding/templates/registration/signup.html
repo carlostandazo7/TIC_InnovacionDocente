@@ -10,33 +10,95 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <!-- Referencia al archivo de estilos CSS -->
     <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+    <!-- Enlace a Bootstrap (Asegúrate de incluir la versión adecuada) -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Enlace al archivo JavaScript de Bootstrap (si es necesario) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.8/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 
 <body class="bg-image">
     <div class="custom-container">
         <div class="custom-card bg-white">
             <h2 class="custom-heading text-2xl mb-4 font-bold text-center">Registro</h2>
-            <form method="post">
+            <form method="post" id="signupForm">
                 {% csrf_token %}
                 <div class="custom-form-group">
-                    <input type="text" class="custom-form-control" placeholder="Nombre de usuario" name="username">
+                    <input type="text" class="custom-form-control" placeholder="Nombre de usuario" name="username" required>
                 </div>
                 <div class="custom-form-group">
-                    <input type="email" class="custom-form-control" placeholder="Correo electrónico" name="email">
+                    <input type="email" class="custom-form-control" placeholder="Correo electrónico" name="email" required>
                 </div>
                 <div class="custom-form-group">
-                    <input type="password" class="custom-form-control" placeholder="Contraseña" name="password1">
+                    <input type="password" class="custom-form-control" placeholder="Contraseña" name="password1" required>
                 </div>
                 <div class="custom-form-group">
-                    <input type="password" class="custom-form-control" placeholder="Confirmar contraseña" name="password2">
+                    <input type="password" class="custom-form-control" placeholder="Confirmar contraseña" name="password2" required>
                 </div>
-                <button type="submit" class="custom-btn">Registrarse</button>
+                <button type="button" class="custom-btn" onclick="validateAndSubmit()">Registrarse</button>
             </form>
-            
+
             <!-- Enlace para regresar a la página anterior -->
             <a href="{% url 'index' %}" class="custom-back-link">Regresar</a>
         </div>
     </div>
+
+    <!-- Ventana emergente para contraseñas no coincidentes -->
+    <div class="modal fade" id="passwordMismatchModal" tabindex="-1" role="dialog" aria-labelledby="passwordMismatchModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="passwordMismatchModalLabel">Error de Registro</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Las contraseñas no coinciden. Por favor, inténtelo de nuevo.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ventana emergente para usuario registrado -->
+    <div class="modal fade" id="userRegisteredModal" tabindex="-1" role="dialog" aria-labelledby="userRegisteredModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userRegisteredModalLabel">Registro Exitoso</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    ¡Usuario registrado con éxito!
+                </div>
+                <div class="modal-footer">
+                    <a href="{% url 'login' %}" class="btn btn-primary">Ir al inicio de sesión</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function validateAndSubmit() {
+            var password1 = document.getElementsByName("password1")[0].value;
+            var password2 = document.getElementsByName("password2")[0].value;
+
+            if (password1 !== password2) {
+                // Muestra la ventana emergente de contraseñas no coincidentes
+                $('#passwordMismatchModal').modal('show');
+            } else {
+                // Envía el formulario si las contraseñas coinciden
+                document.getElementById("signupForm").submit();
+                // Muestra la ventana emergente de usuario registrado después de un breve retraso
+                setTimeout(function() {
+                    $('#userRegisteredModal').modal('show');
+                }, 500);
+            }
+        }
+    </script>
 </body>
 
 </html>
