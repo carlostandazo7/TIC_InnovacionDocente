@@ -15,6 +15,10 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
     path('cargar_documentos/', views.cargar_documentos, name='cargar_documentos'),
     path('ver_documentos/', views.ver_documentos, name='ver_documentos'),
+    path('editar_contenido/<int:documento_id>/', views.editar_contenido, name='editar_contenido'),
+    path('eliminar_documento/<int:documento_id>/', views.eliminar_documento, name='eliminar_documento'),
+    path('ver_contenido/<int:documento_id>/', views.ver_contenido, name='ver_contenido'),
+    path('preprocesar/', views.preprocesar, name='preprocesar'),
 
 ]
 

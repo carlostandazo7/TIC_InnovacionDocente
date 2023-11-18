@@ -1,0 +1,29 @@
+{% extends 'home.html' %}
+
+{% block content %}
+<body>
+
+  <div class="container mt-5">
+      <h2>Editar Contenido</h2>
+  
+      <form method="post" action="{% url 'editar_contenido' documento.id %}?contenido_linea={{ contenido_linea }}">
+        {% csrf_token %}
+        <input type="hidden" name="contenido_linea" value="{{ contenido_linea }}">
+        <div class="form-group">
+            <label for="nuevo_contenido">Nuevo Contenido:</label>
+            <textarea class="form-control" name="nuevo_contenido" rows="10">{{ linea_seleccionada }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+    </form>
+    
+    <a href="{% url 'ver_documentos' %}" class="btn btn-secondary mt-3">Cancelar</a>
+
+  </div>
+  
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.8/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  
+  </body>
+
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends 'home.html' %}
+
+{% block content %}
+  <h1>Contenido del Documento</h1>
+
+  <p class="justificado">{{ linea_seleccionada }}</p>
+
+  <a href="{% url 'ver_documentos' %}" class="btn btn-primary">Volver a la lista de documentos</a>
+{% endblock %}

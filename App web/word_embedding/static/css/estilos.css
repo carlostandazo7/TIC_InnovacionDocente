@@ -200,4 +200,60 @@ body {
     background: #ff0000;
 }
 
+/* Tablas */
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+/* Estilo para las celdas del encabezado */
+.table th {
+    background-color: #4CAF50;
+    color: white;
+    padding: 8px;
+    text-align: left;
+}
+
+/* Estilo para las celdas de datos */
+.table td {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Estilo para las filas impares */
+.table tr:nth-child(odd) {
+    background-color: #f2f2f2;
+}
+
+/* Estilo para los enlaces en las celdas de acción */
+.table a {
+    color: #4CAF50;
+    text-decoration: none;
+    margin-right: 10px;
+}
+
+/* Estilo para los botones de acción */
+.table button {
+    padding: 6px 12px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Cambio de color al pasar el ratón sobre los botones */
+.table button:hover {
+    background-color: #d32f2f;
+}
+
+.justificado {
+    text-align: justify;
+  }
+  
+  .espaciado-fila {
+    margin-bottom: 10px;
+  }
 
