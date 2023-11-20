@@ -19,11 +19,11 @@
               <td>{{ documento.id }}</td>
               <td class="justificado">{{ contenido_linea |truncatewords_html:100 }}</td>
               <td>
-                <a href="{% url 'ver_contenido' documento.id %}?contenido={{ forloop.counter0 }}" class="btn btn-info btn-sm w-100 mb-2">Ver</a>
-                <a href="{% url 'editar_contenido' documento.id %}?contenido={{ forloop.counter0 }}" class="btn btn-warning btn-sm w-100 mb-2">Editar</a>
+                <a href="{% url 'ver_contenido' documento.id %}?contenido={{ forloop.counter0 }}" class="btn btn-info btn-sm w-100 mb-2 text-white">Ver</a>
+                <a href="{% url 'editar_contenido' documento.id %}?contenido={{ forloop.counter0 }}" class="btn btn-warning btn-sm w-100 mb-2 text-white">Editar</a>
 
                 <!-- Botón de eliminar con confirmación modal -->
-                <a href="#" class="btn btn-danger btn-sm w-100" data-toggle="modal" data-target="#confirmarEliminar{{ forloop.parentloop.counter }}">Eliminar</a>
+                <a href="#" class="btn btn-danger btn-sm w-100 text-white" data-toggle="modal" data-target="#confirmarEliminar{{ forloop.parentloop.counter }}">Eliminar</a>
 
                 <!-- Modal de confirmación para eliminar -->
                 <div class="modal fade" id="confirmarEliminar{{ forloop.parentloop.counter }}" tabindex="-1" role="dialog" aria-labelledby="confirmarEliminarLabel{{ forloop.parentloop.counter }}" aria-hidden="true">
@@ -42,7 +42,7 @@
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                         <form method="post" action="{% url 'eliminar_documento' documento.id %}?contenido={{ contenido_linea }}" style="display: inline;">
                           {% csrf_token %}
-                          <button type="submit" class="btn btn-danger">Eliminar</button>
+                          <button type="submit" class="btn btn-danger text-white">Eliminar</button>
                         </form>
                       </div>
                     </div>

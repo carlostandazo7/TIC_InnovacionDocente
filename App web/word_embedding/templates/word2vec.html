@@ -1,0 +1,22 @@
+{% extends 'home.html' %}
+
+{% block content %}
+  <h1>Modelo Word2Vec</h1>
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="row justify-content-center">
+        <h4>Nube de Palabras</h4>
+        <img src="data:image/png;base64,{{ wordcloud_image }}" alt="Wordcloud" class="img-fluid" style="max-width: 50%; height: auto;">
+      </div>
+      <br><br>
+      <div class="row justify-content-center">
+        <h2></h2><br>
+        {{ plot_div|safe }}
+      </div>
+    </div>
+    <br><br>
+    <div class="row justify-content-center">
+      <a href="{% url 'operaciones' %}" class="btn btn-primary">Operaciones</a>
+    </div>
+  </div>
+{% endblock %}

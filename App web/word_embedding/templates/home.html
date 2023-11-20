@@ -14,6 +14,9 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.8/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Agrega estos scripts para visualizar gráficas interactivas con Plotly -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <link rel="stylesheet" type="text/css" href="{% static 'css/estilos.css' %}">
     <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
@@ -27,7 +30,7 @@
         <a href="{% url 'cargar_documentos' %}" class="py-2 my-2 hover:bg-gray-600">Cargar Documentos</a>
         <a href="{% url 'ver_documentos' %}" class="py-2 my-2 hover:bg-gray-600">Ver Documentos</a>
         <a href="{% url 'preprocesar' %}" class="py-2 my-2 hover:bg-gray-600">Preprocesar</a>
-        <a href="#word2vec" class="py-2 my-2 hover:bg-gray-600">Modelo Word2Vec</a>
+        <a href="{% url 'word2vec' %}" class="py-2 my-2 hover:bg-gray-600">Modelo Word2Vec</a>
         <a href="#doc2vec" class="py-2 my-2 hover:bg-gray-600">Modelo Doc2Vec</a>
         <a href="{% url 'logout' %}" class="py-2 my-2 hover:bg-gray-600">Cerrar Sesión</a>
     </nav>
