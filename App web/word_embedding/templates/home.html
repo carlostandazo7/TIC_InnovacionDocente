@@ -14,6 +14,9 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.8/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlF5l06s/Awxwvm6ks1aP/Z9AT2tG8I7nJ7H6dqxJxzI9" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <!-- Agrega estos scripts para visualizar gráficas interactivas con Plotly -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
@@ -31,7 +34,7 @@
         <a href="{% url 'ver_documentos' %}" class="py-2 my-2 hover:bg-gray-600">Ver Documentos</a>
         <a href="{% url 'preprocesar' %}" class="py-2 my-2 hover:bg-gray-600">Preprocesar</a>
         <a href="{% url 'word2vec' %}" class="py-2 my-2 hover:bg-gray-600">Modelo Word2Vec</a>
-        <a href="#doc2vec" class="py-2 my-2 hover:bg-gray-600">Modelo Doc2Vec</a>
+        <a href="{% url 'doc2vec' %}" class="py-2 my-2 hover:bg-gray-600">Modelo Doc2Vec</a>
         <a href="{% url 'logout' %}" class="py-2 my-2 hover:bg-gray-600">Cerrar Sesión</a>
     </nav>
 

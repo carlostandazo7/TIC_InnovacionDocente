@@ -1,0 +1,53 @@
+{% extends 'home.html' %}
+
+{% block content %}
+  <div class="container mt-5">
+    <h1>Modelo Doc2Vec</h1>
+
+    <!-- Formulario para buscar documentos similares -->
+    <form method="post" action="{% url 'doc2vec' %}" class="mt-4">
+      {% csrf_token %}
+      <div class="input-group mb-3">
+        <input type="text" name="query" id="query" class="form-control" placeholder="Ingresa tu consulta" required>
+        <div class="input-group-append">
+          <button type="submit" class="btn btn-primary">Buscar</button>
+        </div>
+      </div>
+    </form>
+
+<!-- Resultados de la búsqueda -->
+{% if results %}
+  <h3 class="mt-3">Resultados:</h3>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Contenido</th>
+        <th>Similitud</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for result in results %}
+        <tr>
+          {% if forloop.first %}
+            <td rowspan="{{ results|length }}">{{ result.id }}</td>
+          {% endif %}
+          <td class="justificado">
+            {% for contenido_linea in result.contenido.splitlines %}
+              {{ contenido_linea|truncatewords_html:100 }}<br>
+            {% endfor %}
+          </td>
+          <td>{{ result.similitud }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Botones de descarga -->
+  <div class="mt-3">
+    <a href="{% url 'download_results' format='csv' %}" class="btn btn-success">Descargar como CSV</a>
+    <a href="{% url 'download_results' format='xlsx' %}" class="btn btn-success">Descargar como XLSX</a>
+  </div>
+{% endif %}
+  </div>
+{% endblock %}

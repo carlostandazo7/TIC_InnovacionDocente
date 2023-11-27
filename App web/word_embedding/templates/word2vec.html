@@ -1,22 +1,73 @@
 {% extends 'home.html' %}
 
 {% block content %}
-  <h1>Modelo Word2Vec</h1>
   <div class="container mt-5">
-    <div class="row justify-content-center">
-      <div class="row justify-content-center">
-        <h4>Nube de Palabras</h4>
-        <img src="data:image/png;base64,{{ wordcloud_image }}" alt="Wordcloud" class="img-fluid" style="max-width: 50%; height: auto;">
-      </div>
-      <br><br>
-      <div class="row justify-content-center">
-        <h2></h2><br>
-        {{ plot_div|safe }}
-      </div>
+    <h1>Modelo Word2Vec</h1>
+
+    <!-- Nube de Palabras -->
+    <div class="wordcloud-container mt-5">
+      <h4>Nube de Palabras</h4><br>
+      <img src="data:image/png;base64,{{ wordcloud_image }}" alt="Wordcloud" class="img-fluid" style="max-width: 50%; height: auto;">
     </div>
-    <br><br>
-    <div class="row justify-content-center">
-      <a href="{% url 'operaciones' %}" class="btn btn-primary">Operaciones</a>
+
+    <!-- Visualización de Vectores de Palabras -->
+    <div class="word-vectors-container mt-5">
+      <h4>Visualización de Vectores de Palabras</h4>
+      {{ plot_div|safe }}
+    </div>
+
+    <!-- Operaciones Aritméticas -->
+    <div class="arithmetic-operations-container mt-5">
+      <h4>Operaciones Aritméticas</h4><br>
+      <form method="post" action="{% url 'word2vec' %}">
+        {% csrf_token %}
+        
+        <!-- Primer Cuadro de Texto -->
+        <div class="form-group">
+          <label for="word1">Palabra 1:</label>
+          <input type="text" name="word1" id="word1" class="form-control" required>
+        </div>
+
+        <!-- Menú Desplegable de Operadores -->
+        <div class="form-group">
+          <label for="operator">Operador:</label>
+          <select name="operator" id="operator" class="form-control" required>
+            <option value="+">Suma (+)</option>
+            <option value="-">Resta (-)</option>
+            <option value="*">Multiplicación (*)</option>
+            <option value="/">División (/)</option>
+          </select>
+        </div>
+
+        <!-- Segundo Cuadro de Texto -->
+        <div class="form-group">
+          <label for="word2">Palabra 2:</label>
+          <input type="text" name="word2" id="word2" class="form-control" required>
+        </div>
+
+        <!-- Botón para Realizar la Operación -->
+        <button type="submit" class="btn btn-primary">Realizar Operación</button>
+      </form>
+
+      <!-- Resultados en una Tabla -->
+      <div class="result-container mt-3">
+        {% if result %}
+          <h5 class="mt-3">Resultado de la operación:</h5>
+          {{ result|safe }}
+        {% endif %}
+      </div>
+      <div class="mt-5 text-center">
+        <a href="{% url 'word2vec_personalizable' %}" class="btn btn-primary">Modelo Personalizable</a>
+      </div>
     </div>
   </div>
+
+  <!-- Script para Limpiar el Campo de Entrada al Recargar la Página -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('word1').value = '';
+      document.getElementById('operator').value = '+';
+      document.getElementById('word2').value = '';
+    });
+  </script>
 {% endblock %}

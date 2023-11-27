@@ -1,17 +1,7 @@
 {% extends 'home.html' %}
 
 {% block content %}
-  <div class="container mt-5">
-    <h1>Operaciones Aritméticas</h1>
-    <form method="post" action="{% url 'operaciones' %}">
-      {% csrf_token %}
-      <label for="arithmetic_operation">Operación Aritmética (ejemplo: palabra1 + palabra2): </label>
-      <input type="text" name="arithmetic_operation" required>
-      <button type="submit" class="btn btn-primary">Calcular</button>
-    </form>
-
-    {% if result %}
-      <p class="mt-3">{{ result }}</p>
-    {% endif %}
-  </div>
+  <h1>Operaciones Aritméticas</h1>
+  <p>Operación: {{ operacion }}</p>
+  <p>Resultado: {{ resultado }}</p>
 {% endblock %}

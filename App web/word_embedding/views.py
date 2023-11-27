@@ -25,6 +25,12 @@ import spacy
 from plotly.offline import plot
 import plotly.express as px
 import base64
+from sklearn.manifold import TSNE
+import numpy as np
+from gensim.models.doc2vec import TaggedDocument, Doc2Vec
+from django.http import HttpResponse
+import csv
+from openpyxl import Workbook
 
 # Vista para el registro de usuarios
 class SignUp(generic.CreateView):
@@ -237,7 +243,6 @@ def word2vec(request):
 
     # Configurar el diseño de la figura
     fig.update_layout(
-        title='Visualización de Vectores de Palabras',
         xaxis_title='Dimensión 1',
         yaxis_title='Dimensión 2',
         showlegend=False,
@@ -268,47 +273,196 @@ def word2vec(request):
         'dimensions': 2,  # Esto puede cambiar según tus necesidades
     }
 
+    # Si se envió un formulario con una operación, realizarla
+    if request.method == 'POST':
+        word1 = request.POST.get('word1', '')
+        operator = request.POST.get('operator', '')
+        word2 = request.POST.get('word2', '')
+        result = perform_arithmetic_operation(model, word1, operator, word2)
+        context['result'] = result
+
     return render(request, 'word2vec.html', context)
 
-def operaciones(request):
-    if request.method == 'POST':
-        # Verifica que 'model' esté definido en tu contexto
-        if 'model' not in locals():
-            return render(request, 'error.html', {'error_message': 'El modelo Word2Vec no está disponible.'})
 
-        user_input = request.POST.get('arithmetic_operation', '')
-        words = user_input.split()
+def perform_arithmetic_operation(model, word1, operator, word2):
+    # Verificar que la entrada sea válida
+    if not word1 or not operator or not word2:
+        return "Entrada no válida. Debe haber dos palabras y un operador."
 
-        if len(words) != 3:
-            result = "Entrada no válida. Deben ser dos palabras y un operador."
+    if operator not in ['+', '-', '*', '/']:
+        return "Operador no válido. Use +, -, *, or /."
+
+    # Realizar la operación
+    if word1 in model.wv and word2 in model.wv:
+        if operator == '+':
+            result_vector = model.wv[word1] + model.wv[word2]
+        elif operator == '-':
+            result_vector = model.wv[word1] - model.wv[word2]
+        elif operator == '*':
+            result_vector = model.wv[word1] * model.wv[word2]
+        elif operator == '/':
+            result_vector = model.wv[word1] / model.wv[word2] if model.wv[word2].any() != 0 else "División por cero"
+            
+        if isinstance(result_vector, str):
+            return "Error: " + result_vector
         else:
-            word1, operator, word2 = words
-            if operator not in ['+', '-', '*', '/']:
-                result = "Operador no válido. Use +, -, *, or /."
-            else:
-                if word1 in model.wv and word2 in model.wv:
-                    if operator == '+':
-                        result_vector = model.wv[word1] + model.wv[word2]
-                    elif operator == '-':
-                        result_vector = model.wv[word1] - model.wv[word2]
-                    elif operator == '*':
-                        result_vector = model.wv[word1] * model.wv[word2]
-                    elif operator == '/':
-                        result_vector = model.wv[word1] / model.wv[word2] if model.wv[word2].any() != 0 else "División por cero"
-
-                    if isinstance(result_vector, str):
-                        result = "Error: " + result_vector
-                    else:
-                        similar_words = model.wv.similar_by_vector(result_vector, topn=10)
-                        result = f"Resultado de la operación: {word1} {operator} {word2} = {similar_words}"
-                else:
-                    result = "Algunas palabras no están en el modelo Word2Vec."
+            similar_words = model.wv.similar_by_vector(result_vector, topn=10)
+            result_table = generate_result_table(similar_words)
+            return result_table
 
     else:
-        result = None
+        return "Algunas palabras no están en el modelo Word2Vec."
 
-    context = {'result': result}
-    return render(request, 'operaciones.html', context)
+
+def generate_result_table(similar_words):
+    # Generar una tabla HTML con los resultados
+    table_html = "<table class='table table-bordered table-hover'><thead><tr><th>Palabra</th><th>Similitud</th></tr></thead><tbody>"
+    for word, similarity in similar_words:
+        table_html += f"<tr><td>{word}</td><td>{similarity:.4f}</td></tr>"
+    table_html += "</tbody></table>"
+    return table_html
+
+def word2vec_personalizable(request):
+    if request.method == 'POST':
+        word = request.POST.get('word', '')
+        top_n = int(request.POST.get('top_n', ''))
+        if word and top_n:
+            similar_words_plot = plot_similar_words(word, top_n)
+            return render(request, 'modelo_personalizable.html', {'similar_words_plot': similar_words_plot})
+    
+    return render(request, 'modelo_personalizable.html')
+
+def plot_similar_words(word, top_n=50):
+    # Aquí deberías agregar la lógica para entrenar el modelo con los datos "contenido_preprocesado"
+    # y luego obtener las palabras similares y sus vectores para visualizarlos con Plotly
+    # El código a continuación es un ejemplo basado en el código proporcionado anteriormente
+    # Asegúrate de adaptarlo según tus necesidades
+
+    # Ejemplo de código (puedes modificarlo según tus necesidades)
+    documentos = Documento.objects.all()
+    documentos_preprocesados = [documento.contenido_preprocesado.lower().split() for documento in documentos]
+
+    bigram = Phrases(documentos_preprocesados, min_count=1, threshold=1)
+    trigram = Phrases(bigram[documentos_preprocesados], min_count=1, threshold=1)
+    documentos_preprocesados = [trigram[bigram[documento]] for documento in documentos_preprocesados]
+
+    model = Word2Vec(documentos_preprocesados, vector_size=100, window=5, min_count=1, workers=4, max_final_vocab=None)
+
+    similar_words = [sim_word for sim_word, _ in model.wv.most_similar(word, topn=top_n) if sim_word in model.wv]
+    similar_words = similar_words[:top_n]
+    similar_words.append(word)
+
+    vectors_to_plot = []
+    for w in similar_words:
+        if w in model.wv:
+            vectors_to_plot.append(model.wv[w])
+
+    vectors_to_plot = np.array(vectors_to_plot)
+
+    tsne = TSNE(n_components=2, perplexity=len(similar_words) - 1)
+    word_vectors_2d = tsne.fit_transform(vectors_to_plot)
+
+    df = pd.DataFrame(word_vectors_2d, columns=['Dimensión 1', 'Dimensión 2'])
+    df['Palabra'] = similar_words
+
+    # Crear una figura similar a plot_word_vectors_zoomable
+    fig = go.Figure()
+
+    for i, row in df.iterrows():
+        fig.add_trace(go.Scatter(
+            x=[row['Dimensión 1']],
+            y=[row['Dimensión 2']],
+            text=[row['Palabra']],
+            mode='markers',
+            name=row['Palabra']
+        ))
+
+    fig.update_layout(
+        title=f'Visualización de las {top_n} palabras más similares a "{word}"',
+        xaxis_title='Dimensión 1',
+        yaxis_title='Dimensión 2',
+        showlegend=False
+    )
+
+    # Habilitar zoom y panorámica
+    fig.update_xaxes(type='linear')
+    fig.update_yaxes(type='linear')
+
+    # Convertir la figura de Plotly a HTML
+    plot_div = fig.to_html(full_html=False)
+    return plot_div
+
+# Cargar el modelo de spaCy en español
+nlp = spacy.load("es_core_news_sm")
+
+# Preprocesar el texto y lemmatizar usando spaCy
+def preprocess_text(text):
+    doc = nlp(text)
+    tokens = [token.lemma_ for token in doc if not token.is_stop and not token.is_punct]
+    return tokens
+
+def doc2vec(request):
+    # Obtener los documentos preprocesados
+    documentos = Documento.objects.all()
+    documentos_preprocesados = [preprocess_text(documento.contenido_preprocesado.lower()) for documento in documentos]
+
+    # Crear objetos TaggedDocument para el entrenamiento
+    tagged_data = [TaggedDocument(words=doc, tags=[str(i)]) for i, doc in enumerate(documentos_preprocesados)]
+
+    # Definir y entrenar el modelo Doc2Vec
+    model = Doc2Vec(vector_size=100, window=5, min_count=1, dm=1, epochs=20, workers=4)
+    model.build_vocab(tagged_data)
+    model.train(tagged_data, total_examples=model.corpus_count, epochs=model.epochs)
+
+    # Función para buscar documentos similares
+    def search_similar(query):
+        query_tokens = preprocess_text(query)
+        similar_documents = model.dv.most_similar(positive=[model.infer_vector(query_tokens)], topn=5)
+
+        # Crear una lista de resultados
+        results = []
+        for doc_id, similarity in similar_documents:
+            document = documentos[int(doc_id)]  # Obtener el documento correspondiente
+            results.append({
+                'id': document.id,
+                'contenido': document.contenido_preprocesado,
+                'similitud': similarity
+            })
+
+        return results
+
+    # Si se envió un formulario con una consulta, realizar la búsqueda
+    if request.method == 'POST':
+        query = request.POST.get('query', '')
+        results = search_similar(query)
+    else:
+        results = None
+
+    context = {
+        'documentos': documentos,
+        'results': results,
+    }
+
+    return render(request, 'doc2vec.html', context)
+
+
+def download_results(request, format):
+    # Lógica para obtener los resultados en el formato deseado (CSV o XLSX)
+
+    if format == 'csv':
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="resultados.csv"'
+        writer = csv.writer(response)
+        # Escribir los datos en el objeto writer
+    elif format == 'xlsx':
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="resultados.xlsx"'
+        # Lógica para escribir los resultados en el archivo XLSX usando openpyxl
+    else:
+        # Manejar el caso en que el formato no sea válido
+        response = HttpResponse(status=400)
+
+    return response
 
 # Vista en doc2vec 
 # 1. Descargar los resultados

@@ -1,0 +1,29 @@
+{% extends 'home.html' %}
+
+{% block content %}
+  <div class="container mt-5">
+    <h1>Modelo Personalizable</h1>
+
+    <!-- Formulario para ingresar palabra y número de palabras a mostrar -->
+    <form method="post" action="{% url 'word2vec_personalizable' %}">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="word">Palabra:</label>
+        <input type="text" name="word" id="word" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="top_n">Número de Palabras a Mostrar:</label>
+        <input type="number" name="top_n" id="top_n" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Mostrar Palabras Similares</button>
+    </form>
+
+    <!-- Visualización de palabras similares -->
+    {% if similar_words_plot %}
+      <div class="word-similar-container mt-5">
+        <h4>Palabras Similares</h4>
+        {{ similar_words_plot|safe }}
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}
