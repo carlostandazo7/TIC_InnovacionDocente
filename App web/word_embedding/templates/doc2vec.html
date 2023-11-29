@@ -4,7 +4,6 @@
   <div class="container mt-5">
     <h1>Modelo Doc2Vec</h1>
 
-    <!-- Formulario para buscar documentos similares -->
     <form method="post" action="{% url 'doc2vec' %}" class="mt-4">
       {% csrf_token %}
       <div class="input-group mb-3">
@@ -13,41 +12,32 @@
           <button type="submit" class="btn btn-primary">Buscar</button>
         </div>
       </div>
+      <div class="form-text">Por favor, ingrese una oración o contenido.</div>
     </form>
 
-<!-- Resultados de la búsqueda -->
-{% if results %}
-  <h3 class="mt-3">Resultados:</h3>
-  <table class="table">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Contenido</th>
-        <th>Similitud</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for result in results %}
-        <tr>
-          {% if forloop.first %}
-            <td rowspan="{{ results|length }}">{{ result.id }}</td>
-          {% endif %}
-          <td class="justificado">
-            {% for contenido_linea in result.contenido.splitlines %}
-              {{ contenido_linea|truncatewords_html:100 }}<br>
-            {% endfor %}
-          </td>
-          <td>{{ result.similitud }}</td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
-  <!-- Botones de descarga -->
-  <div class="mt-3">
-    <a href="{% url 'download_results' format='csv' %}" class="btn btn-success">Descargar como CSV</a>
-    <a href="{% url 'download_results' format='xlsx' %}" class="btn btn-success">Descargar como XLSX</a>
-  </div>
-{% endif %}
+    {% if results %}
+      <h3 class="mt-3">Resultados:</h3>
+      <div class="mt-3">
+        <a href="{% url 'download_results' format='xlsx' %}" class="btn btn-success">Descargar como XLSX</a>
+      </div>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th class="justificado">Contenido</th>
+            <th>Similitud</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for result in results %}
+          <tr>
+            <td>{{ result.id }}</td>
+            <td class="justificado">{{ result.contenido | truncatewords_html:100 }}</td>
+            <td>{{ result.similitud }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
   </div>
 {% endblock %}

@@ -1,42 +1,52 @@
+<!-- preprocesar.html -->
 
 {% extends 'home.html' %}
 
 {% block content %}
-  <h1>Preprocesamiento de Datos</h1>
-
-  <!-- Cargar el filtro personalizado -->
-  {% load preprocesamiento_tags %}
-
-  <!-- Mostrar el formulario para eliminar palabras -->
-  <div class="container mt-3">
-    <form method="post" action="{% url 'preprocesar' %}">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit" class="btn btn-primary">Aplicar Filtro</button>
-    </form>
-  </div>
-
-  <!-- Mostrar los resultados del preprocesamiento línea por línea -->
   <div class="container mt-5">
-    <table class="table table-bordered table-sm">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th class="justificado">Contenido Preprocesado</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for documento in documentos %}
-          {% for contenido_linea in documento.contenido_preprocesado.splitlines %}
-            <tr class="mb-3">
-              <td>{{ documento.id }}</td>
-              
-              <!-- Mostrar cada línea del contenido preprocesado -->
-              <td class="justificado">{{ contenido_linea }}</td>
-            </tr>
+    <h1>Preprocesamiento de Datos</h1>
+
+    <!-- Cargar el filtro personalizado -->
+    {% load preprocesamiento_tags %}
+
+    <!-- Mostrar el formulario para eliminar palabras -->
+    <div class="container mt-3">
+      <form method="post" action="{% url 'preprocesar' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Preprocesar datos</button>
+      </form>
+    </div>
+
+    <!-- Mostrar los resultados del preprocesamiento línea por línea -->
+    <div class="container mt-5">
+      <table class="table table-bordered table-sm">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th class="justificado">Contenido Preprocesado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for documento in documentos %}
+            {% for contenido_linea in documento.contenido_preprocesado.splitlines %}
+              <tr class="mb-3">
+                <td>{{ documento.id }}</td>
+
+                <!-- Mostrar solo las primeras 100 palabras -->
+                <td class="justificado">{{ contenido_linea|truncatewords_html:100 }}</td>
+
+                <!-- Agregar un botón para ver el texto completo -->
+                <td class="text-center">
+                  <a href="{% url 'ver_texto_completo' documento.id %}?linea={{ forloop.counter0 }}" class="btn btn-info btn-sm w-100 mb-2 mx-auto text-white">Ver</a>
+                </td>
+              </tr>
+            {% endfor %}
           {% endfor %}
-        {% endfor %}
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </div>
   </div>
 {% endblock %}
+

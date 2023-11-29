@@ -29,8 +29,9 @@ from sklearn.manifold import TSNE
 import numpy as np
 from gensim.models.doc2vec import TaggedDocument, Doc2Vec
 from django.http import HttpResponse
-import csv
+import openpyxl
 from openpyxl import Workbook
+
 
 # Vista para el registro de usuarios
 class SignUp(generic.CreateView):
@@ -198,6 +199,24 @@ def preprocesar(request):
 
     context = {'documentos': documentos, 'form': form}
     return render(request, 'preprocesar.html', context)
+
+def ver_texto_completo(request, documento_id):
+    documento = get_object_or_404(Documento, id=documento_id)
+    linea_seleccionada = request.GET.get('linea', None)
+    
+    # Si se proporciona un índice de línea, mostrar solo esa línea
+    if linea_seleccionada is not None:
+        lineas = documento.contenido_preprocesado.splitlines()
+        try:
+            linea_seleccionada = int(linea_seleccionada)
+            contenido_linea = lineas[linea_seleccionada]
+        except (ValueError, IndexError):
+            contenido_linea = "Línea no válida"
+    else:
+        # Si no se proporciona un índice de línea, mostrar todo el contenido
+        contenido_linea = "\n".join(documento.contenido_preprocesado.splitlines())
+
+    return render(request, 'ver_texto_completo.html', {'documento': documento, 'contenido_linea': contenido_linea})
 
 # Vista para el algoritmo WORD2VEC
 
@@ -415,14 +434,20 @@ def doc2vec(request):
     model.train(tagged_data, total_examples=model.corpus_count, epochs=model.epochs)
 
     # Función para buscar documentos similares
+    no_results_message = None
+
+    # Función para buscar documentos similares
     def search_similar(query):
         query_tokens = preprocess_text(query)
         similar_documents = model.dv.most_similar(positive=[model.infer_vector(query_tokens)], topn=5)
 
+        # Filtrar resultados con similitud menor a 0.5
+        filtered_documents = [(int(doc_id), similarity) for doc_id, similarity in similar_documents if similarity >= 0.5]
+
         # Crear una lista de resultados
         results = []
-        for doc_id, similarity in similar_documents:
-            document = documentos[int(doc_id)]  # Obtener el documento correspondiente
+        for doc_id, similarity in filtered_documents:
+            document = documentos[doc_id]  # Obtener el documento correspondiente
             results.append({
                 'id': document.id,
                 'contenido': document.contenido_preprocesado,
@@ -435,12 +460,17 @@ def doc2vec(request):
     if request.method == 'POST':
         query = request.POST.get('query', '')
         results = search_similar(query)
+
+        # Verificar si no hay resultados
+        if not results:
+            no_results_message = "No hay similitudes"
     else:
         results = None
 
     context = {
         'documentos': documentos,
         'results': results,
+        'no_results_message': no_results_message,
     }
 
     return render(request, 'doc2vec.html', context)
@@ -448,21 +478,36 @@ def doc2vec(request):
 
 def download_results(request, format):
     # Lógica para obtener los resultados en el formato deseado (CSV o XLSX)
+    results = get_results(request)  # Ajusta esta función según tu aplicación
 
-    if format == 'csv':
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="resultados.csv"'
-        writer = csv.writer(response)
-        # Escribir los datos en el objeto writer
-    elif format == 'xlsx':
+    if format == 'xlsx':
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = 'attachment; filename="resultados.xlsx"'
-        # Lógica para escribir los resultados en el archivo XLSX usando openpyxl
+
+        # Crear un libro (Workbook) y una hoja de cálculo (Worksheet)
+        workbook = openpyxl.Workbook()
+        worksheet = workbook.active
+
+        # Escribir los encabezados
+        worksheet.append(['ID', 'Contenido', 'Similitud'])
+
+        # Escribir los datos en el libro
+        for result in results:
+            worksheet.append([result['id'], result['contenido'], result['similitud']])
+
+        # Guardar el libro en la respuesta
+        workbook.save(response)
     else:
         # Manejar el caso en que el formato no sea válido
         response = HttpResponse(status=400)
 
     return response
+
+# Lógica para obtener los resultados (ajusta según tu aplicación)
+def get_results(request):
+    # Esta función debe contener la lógica para obtener los resultados de tu modelo o base de datos.
+    # Devuelve una lista de resultados similar a la que utilizaste en la vista principal.
+    pass
 
 # Vista en doc2vec 
 # 1. Descargar los resultados

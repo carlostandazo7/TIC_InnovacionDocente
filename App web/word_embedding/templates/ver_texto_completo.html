@@ -1,0 +1,9 @@
+{% extends 'home.html' %}
+
+{% block content %}
+  <div class="container mt-5">
+    <h1>Contenido del Documento</h1>
+    <p class="justificado">{{ contenido_linea }}</p>
+    <a href="{% url 'preprocesar' %}" class="btn btn-primary">Volver a la lista de documentos</a>
+  </div>
+{% endblock %}
