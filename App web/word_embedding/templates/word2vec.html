@@ -7,18 +7,23 @@
     <!-- Nube de Palabras -->
     <div class="wordcloud-container mt-5">
       <h4>Nube de Palabras</h4><br>
+      <p>Visualización gráfica que representa la frecuencia de palabras en un conjunto de datos. El tamaño de cada palabra es proporcional a su frecuencia de aparición.</p>
       <img src="data:image/png;base64,{{ wordcloud_image }}" alt="Wordcloud" class="img-fluid" style="max-width: 50%; height: auto;">
     </div>
 
     <!-- Visualización de Vectores de Palabras -->
     <div class="word-vectors-container mt-5">
-      <h4>Visualización de Vectores de Palabras</h4>
+      <h4>
+        </strong>Visualización de Vectores de Palabras</strong>
+      </h4>
+      <p>Representación gráfica de los vectores de palabras generados por un modelo Word2Vec. Cada palabra se mapea a un punto en un espacio vectorial donde la proximidad entre puntos refleja la similitud semántica entre las palabras.</p>
       {{ plot_div|safe }}
     </div>
 
     <!-- Operaciones Aritméticas -->
     <div class="arithmetic-operations-container mt-5">
       <h4>Operaciones Aritméticas</h4><br>
+      <p>Los modelos Word2Vec no solo capturan significados de palabras, sino que también permiten operaciones aritméticas en su espacio vectorial. Por ejemplo, la operación 'reina' + 'rey' - 'hombre' puede dar como resultado 'mujer'. Estas operaciones ilustran la capacidad del modelo para entender relaciones semánticas y revelan conexiones significativas entre conceptos en un espacio matemático.</p>
       <form method="post" action="{% url 'word2vec' %}">
         {% csrf_token %}
         

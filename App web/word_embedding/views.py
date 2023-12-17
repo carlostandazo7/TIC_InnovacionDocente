@@ -29,7 +29,7 @@ from sklearn.manifold import TSNE
 import numpy as np
 from gensim.models.doc2vec import TaggedDocument, Doc2Vec
 from django.http import HttpResponse
-import openpyxl
+from io import BytesIO
 from openpyxl import Workbook
 
 
@@ -237,6 +237,8 @@ def word2vec(request):
 
     # Entrenar el modelo Word2Vec
     model = Word2Vec(documentos_preprocesados, vector_size=100, window=5, min_count=1, workers=4, max_final_vocab=None)
+    
+    # Personalizar el modelo
 
     # Obtener todas las palabras en el modelo Word2Vec
     words = list(model.wv.index_to_key)
@@ -420,52 +422,53 @@ def preprocess_text(text):
     tokens = [token.lemma_ for token in doc if not token.is_stop and not token.is_punct]
     return tokens
 
-def doc2vec(request):
-    # Obtener los documentos preprocesados
-    documentos = Documento.objects.all()
+# Función auxiliar para crear tagged_data
+def create_tagged_data(documentos):
     documentos_preprocesados = [preprocess_text(documento.contenido_preprocesado.lower()) for documento in documentos]
+    return [TaggedDocument(words=doc, tags=[str(i)]) for i, doc in enumerate(documentos_preprocesados)]
 
-    # Crear objetos TaggedDocument para el entrenamiento
-    tagged_data = [TaggedDocument(words=doc, tags=[str(i)]) for i, doc in enumerate(documentos_preprocesados)]
+# Definir la función search_similar fuera de la vista
+def search_similar(model, documentos, query):
+    query_tokens = preprocess_text(query)
+    similar_documents = model.dv.most_similar(positive=[model.infer_vector(query_tokens)], topn=5)
+
+    # Filtrar resultados con similitud mayor o igual a 0.5
+    filtered_documents = [(int(doc_id), similarity) for doc_id, similarity in similar_documents if similarity >= 0.5]
+
+    # Crear una lista de resultados
+    results = []
+    for doc_id, similarity in filtered_documents:
+        document = documentos[doc_id]  # Obtener el documento correspondiente
+        results.append({
+            'id': document.id,
+            'contenido': document.contenido_preprocesado,
+            'similitud': similarity
+        })
+
+    return results
+
+def doc2vec(request):
+    # Obtener los documentos
+    documentos = Documento.objects.all()
+    
+    # Crear tagged_data
+    tagged_data = create_tagged_data(documentos)
 
     # Definir y entrenar el modelo Doc2Vec
     model = Doc2Vec(vector_size=100, window=5, min_count=1, dm=1, epochs=20, workers=4)
     model.build_vocab(tagged_data)
     model.train(tagged_data, total_examples=model.corpus_count, epochs=model.epochs)
 
-    # Función para buscar documentos similares
-    no_results_message = None
-
-    # Función para buscar documentos similares
-    def search_similar(query):
-        query_tokens = preprocess_text(query)
-        similar_documents = model.dv.most_similar(positive=[model.infer_vector(query_tokens)], topn=5)
-
-        # Filtrar resultados con similitud menor a 0.5
-        filtered_documents = [(int(doc_id), similarity) for doc_id, similarity in similar_documents if similarity >= 0.5]
-
-        # Crear una lista de resultados
-        results = []
-        for doc_id, similarity in filtered_documents:
-            document = documentos[doc_id]  # Obtener el documento correspondiente
-            results.append({
-                'id': document.id,
-                'contenido': document.contenido_preprocesado,
-                'similitud': similarity
-            })
-
-        return results
-
     # Si se envió un formulario con una consulta, realizar la búsqueda
     if request.method == 'POST':
         query = request.POST.get('query', '')
-        results = search_similar(query)
+        results = search_similar(model, documentos, query)
 
         # Verificar si no hay resultados
-        if not results:
-            no_results_message = "No hay similitudes"
+        no_results_message = "No hay similitudes" if not results else None
     else:
         results = None
+        no_results_message = None
 
     context = {
         'documentos': documentos,
@@ -475,40 +478,45 @@ def doc2vec(request):
 
     return render(request, 'doc2vec.html', context)
 
+# Función para descargar resultados
+def download_results(request):
+    # Obtener los documentos
+    documentos = Documento.objects.all()
 
-def download_results(request, format):
-    # Lógica para obtener los resultados en el formato deseado (CSV o XLSX)
-    results = get_results(request)  # Ajusta esta función según tu aplicación
+    # Si se envió un formulario con una consulta, realizar la búsqueda
+    query = request.POST.get('query', '')
 
-    if format == 'xlsx':
-        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = 'attachment; filename="resultados.xlsx"'
+    # Crear tagged_data
+    tagged_data = create_tagged_data(documentos)
 
-        # Crear un libro (Workbook) y una hoja de cálculo (Worksheet)
-        workbook = openpyxl.Workbook()
-        worksheet = workbook.active
+    # Crear y entrenar el modelo Doc2Vec
+    model = Doc2Vec(vector_size=100, window=5, min_count=1, dm=1, epochs=20, workers=4)
+    model.build_vocab(tagged_data)
+    model.train(tagged_data, total_examples=model.corpus_count, epochs=model.epochs)
 
-        # Escribir los encabezados
-        worksheet.append(['ID', 'Contenido', 'Similitud'])
+    results = search_similar(model, documentos, query)
 
-        # Escribir los datos en el libro
-        for result in results:
-            worksheet.append([result['id'], result['contenido'], result['similitud']])
+    # Crear un DataFrame de Pandas directamente desde los resultados
+    df = pd.DataFrame(results)
 
-        # Guardar el libro en la respuesta
-        workbook.save(response)
-    else:
-        # Manejar el caso en que el formato no sea válido
-        response = HttpResponse(status=400)
+    # Crear una respuesta HTTP con el archivo XLSX utilizando openpyxl
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=resultados.xlsx'
+
+    # Crear el archivo Excel utilizando openpyxl
+    workbook = Workbook()
+    worksheet = workbook.active
+
+    # Agregar resultados
+    for _, row in df.iterrows():
+        row_data = [row['id'], row['contenido'].lstrip().rstrip(), row['similitud']]
+        worksheet.append(row_data)
+
+    # Agregar encabezados
+    headers = ['ID', 'Contenido', 'Similitud']
+    worksheet.append(headers)
+
+    # Guardar el archivo Excel en la respuesta
+    workbook.save(response)
 
     return response
-
-# Lógica para obtener los resultados (ajusta según tu aplicación)
-def get_results(request):
-    # Esta función debe contener la lógica para obtener los resultados de tu modelo o base de datos.
-    # Devuelve una lista de resultados similar a la que utilizaste en la vista principal.
-    pass
-
-# Vista en doc2vec 
-# 1. Descargar los resultados
-# 2. Agregar botones para ver "mas similares" y "menos similares"

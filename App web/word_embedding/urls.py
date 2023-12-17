@@ -23,10 +23,8 @@ urlpatterns = [
     path('perform_arithmetic_operation/', views.perform_arithmetic_operation, name='perform_arithmetic_operation'),
     path('modelo_personalizable/', views.word2vec_personalizable, name='word2vec_personalizable'),
     path('doc2vec/', views.doc2vec, name='doc2vec'),
-    path('download_results/<str:format>/', views.download_results, name='download_results'),
+    #path('download_results/', views.download_results, name='download_results'),
     path('ver_texto_completo/<int:documento_id>/', views.ver_texto_completo, name='ver_texto_completo'),
-    #path('modelo_word2vec/', views.modelo_word2vec, name='modelo_word2vec'),
-    #path('operaciones/', views.operaciones, name='operaciones'),
 
 ]
 
