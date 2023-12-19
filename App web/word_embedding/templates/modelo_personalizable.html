@@ -4,7 +4,8 @@
   <div class="container mt-5">
     <h1>Modelo Personalizable</h1>
 
-    <!-- Formulario para ingresar palabra y número de palabras a mostrar -->
+    <!-- Formulario para el modelo word2vec personalizabe -->
+    
     <form method="post" action="{% url 'word2vec_personalizable' %}">
       {% csrf_token %}
       <div class="form-group">
@@ -15,8 +16,36 @@
         <label for="top_n">Número de Palabras a Mostrar:</label>
         <input type="number" name="top_n" id="top_n" class="form-control" required>
       </div>
+      <div class="form-group">
+        <label for="vector_size">Tamaño del Vector (vector_size):</label>
+        <input type="number" name="vector_size" id="vector_size" class="form-control" required>
+        <small id="vector_size_help" class="form-text text-muted">
+          El tamaño del vector representa la dimensionalidad de los vectores de palabra en el modelo. Valores típicos incluyen 50, 100, o 300.
+        </small>
+      </div>
+      <div class="form-group">
+        <label for="window">Tamaño de la Ventana (window):</label>
+        <input type="number" name="window" id="window" class="form-control" required>
+        <small id="window_help" class="form-text text-muted">
+          El tamaño de la ventana determina la distancia máxima entre una palabra objetivo y las palabras circundantes utilizadas para su contexto.
+        </small>
+      </div>
+      <div class="form-group">
+        <label for="min_count">Recuento Mínimo (min_count):</label>
+        <input type="number" name="min_count" id="min_count" class="form-control" required>
+        <small id="min_count_help" class="form-text text-muted">
+          El recuento mínimo especifica la cantidad mínima de veces que una palabra debe aparecer para ser considerada en el modelo.
+        </small>
+      </div>
+      <div class="form-group">
+        <label for="workers">Número de Trabajadores (workers):</label>
+        <input type="number" name="workers" id="workers" class="form-control" required>
+        <small id="workers_help" class="form-text text-muted">
+          El número de trabajadores indica la cantidad de hilos utilizados para entrenar el modelo. Un valor alto acelera el proceso en máquinas multi-core.
+        </small>
+      </div>
       <button type="submit" class="btn btn-primary">Mostrar Palabras Similares</button>
-    </form>
+    </form>  
 
     <!-- Visualización de palabras similares -->
     {% if similar_words_plot %}

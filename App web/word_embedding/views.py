@@ -66,7 +66,6 @@ def cargar_documentos(request):
             df = pd.read_excel(documento.archivo)
 
             # Realizar las operaciones de limpieza o procesamiento según sea necesario
-            # Puedes personalizar esta parte según tus necesidades
             df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 
             # Guardar el contenido preprocesado en el modelo
@@ -82,10 +81,12 @@ def cargar_documentos(request):
 
     return render(request, 'cargar_documentos.html', {'form': form})
 
+# Vista para visualizar los documentos
 def ver_documentos(request):
     documentos = Documento.objects.all()
     return render(request, 'ver_documentos.html', {'documentos': documentos})
 
+# Vista para ver el contenido de cada documento
 def ver_contenido(request, documento_id):
     documento = get_object_or_404(Documento, id=documento_id)
     contenido_linea = request.GET.get('contenido', '0')
@@ -103,8 +104,7 @@ def ver_contenido(request, documento_id):
 
     return render(request, 'ver_contenido.html', {'linea_seleccionada': linea_seleccionada})
 
-# vista para editar contenido
-
+# vista para editar el contenido
 @transaction.atomic
 def editar_contenido(request, documento_id):
     documento = get_object_or_404(Documento, id=documento_id)
@@ -124,20 +124,16 @@ def editar_contenido(request, documento_id):
     if request.method == 'POST':
         nuevo_contenido = request.POST.get('nuevo_contenido', '')
 
-        # Actualiza la línea en la lista
         lineas_contenido[indice_linea] = nuevo_contenido
 
-        # Actualiza el contenido del documento
         documento.contenido = '\n'.join(lineas_contenido)
         documento.save()
 
-        # Redirige a la vista 'ver_documentos' después de la edición
         return redirect('ver_documentos')
 
     return render(request, 'editar_contenido.html', {'documento': documento, 'contenido_linea': contenido_linea, 'linea_seleccionada': linea_seleccionada})
 
 # Vista para eliminar contenido
-
 @require_POST
 def eliminar_documento(request, documento_id):
     documento = get_object_or_404(Documento, id=documento_id)
@@ -151,18 +147,14 @@ def eliminar_documento(request, documento_id):
     lineas_contenido = documento.contenido.splitlines()
 
     if 0 <= indice_linea < len(lineas_contenido):
-        # Elimina la línea de la lista
         del lineas_contenido[indice_linea]
 
-        # Actualiza el contenido del documento
         documento.contenido = '\n'.join(lineas_contenido)
         documento.save()
 
-    # Redirige a la vista 'ver_documentos' después de eliminar la línea
     return redirect('ver_documentos')
 
 # Vista para el preprocesamiento de los datos
-
 register = template.Library()
 @register.filter(name='preprocesar')
 def preprocesar(request):
@@ -200,6 +192,7 @@ def preprocesar(request):
     context = {'documentos': documentos, 'form': form}
     return render(request, 'preprocesar.html', context)
 
+# Vista para ver el texto completo de la tabla
 def ver_texto_completo(request, documento_id):
     documento = get_object_or_404(Documento, id=documento_id)
     linea_seleccionada = request.GET.get('linea', None)
@@ -218,10 +211,7 @@ def ver_texto_completo(request, documento_id):
 
     return render(request, 'ver_texto_completo.html', {'documento': documento, 'contenido_linea': contenido_linea})
 
-# Vista para el algoritmo WORD2VEC
-
-# Revisar si es posible descargar el modelo word2vec
-
+# ALGORITMO WORD2VEC
 def word2vec(request):
     import matplotlib
     matplotlib.use('Agg')
@@ -238,8 +228,6 @@ def word2vec(request):
     # Entrenar el modelo Word2Vec
     model = Word2Vec(documentos_preprocesados, vector_size=100, window=5, min_count=1, workers=4, max_final_vocab=None)
     
-    # Personalizar el modelo
-
     # Obtener todas las palabras en el modelo Word2Vec
     words = list(model.wv.index_to_key)
 
@@ -291,10 +279,9 @@ def word2vec(request):
         'wordcloud_image': wordcloud_image,
         'words': words,
         'vectors': word_vectors_2d,
-        'dimensions': 2,  # Esto puede cambiar según tus necesidades
+        'dimensions': 2,
     }
 
-    # Si se envió un formulario con una operación, realizarla
     if request.method == 'POST':
         word1 = request.POST.get('word1', '')
         operator = request.POST.get('operator', '')
@@ -304,7 +291,7 @@ def word2vec(request):
 
     return render(request, 'word2vec.html', context)
 
-
+# Función para realizar operaciones aritmeticas con el modelo
 def perform_arithmetic_operation(model, word1, operator, word2):
     # Verificar que la entrada sea válida
     if not word1 or not operator or not word2:
@@ -334,7 +321,7 @@ def perform_arithmetic_operation(model, word1, operator, word2):
     else:
         return "Algunas palabras no están en el modelo Word2Vec."
 
-
+# Vista para visualizar los resultados del modelo
 def generate_result_table(similar_words):
     # Generar una tabla HTML con los resultados
     table_html = "<table class='table table-bordered table-hover'><thead><tr><th>Palabra</th><th>Similitud</th></tr></thead><tbody>"
@@ -343,31 +330,30 @@ def generate_result_table(similar_words):
     table_html += "</tbody></table>"
     return table_html
 
+# WORD2VEC PERSONALIZABLE
 def word2vec_personalizable(request):
     if request.method == 'POST':
         word = request.POST.get('word', '')
         top_n = int(request.POST.get('top_n', ''))
-        if word and top_n:
-            similar_words_plot = plot_similar_words(word, top_n)
+        vector_size = int(request.POST.get('vector_size', ''))
+        window = int(request.POST.get('window', ''))
+        min_count = int(request.POST.get('min_count', ''))
+        workers = int(request.POST.get('workers', ''))
+
+        if word and top_n and vector_size and window and min_count and workers:
+            similar_words_plot = plot_similar_words(word, top_n, vector_size, window, min_count, workers)
             return render(request, 'modelo_personalizable.html', {'similar_words_plot': similar_words_plot})
-    
+
     return render(request, 'modelo_personalizable.html')
 
-def plot_similar_words(word, top_n=50):
-    # Aquí deberías agregar la lógica para entrenar el modelo con los datos "contenido_preprocesado"
-    # y luego obtener las palabras similares y sus vectores para visualizarlos con Plotly
-    # El código a continuación es un ejemplo basado en el código proporcionado anteriormente
-    # Asegúrate de adaptarlo según tus necesidades
-
-    # Ejemplo de código (puedes modificarlo según tus necesidades)
+def plot_similar_words(word, top_n=50, vector_size=100, window=5, min_count=1, workers=4):
     documentos = Documento.objects.all()
     documentos_preprocesados = [documento.contenido_preprocesado.lower().split() for documento in documentos]
-
     bigram = Phrases(documentos_preprocesados, min_count=1, threshold=1)
     trigram = Phrases(bigram[documentos_preprocesados], min_count=1, threshold=1)
     documentos_preprocesados = [trigram[bigram[documento]] for documento in documentos_preprocesados]
 
-    model = Word2Vec(documentos_preprocesados, vector_size=100, window=5, min_count=1, workers=4, max_final_vocab=None)
+    model = Word2Vec(documentos_preprocesados, vector_size=vector_size, window=window, min_count=min_count, workers=workers, max_final_vocab=None)
 
     similar_words = [sim_word for sim_word, _ in model.wv.most_similar(word, topn=top_n) if sim_word in model.wv]
     similar_words = similar_words[:top_n]
@@ -386,7 +372,6 @@ def plot_similar_words(word, top_n=50):
     df = pd.DataFrame(word_vectors_2d, columns=['Dimensión 1', 'Dimensión 2'])
     df['Palabra'] = similar_words
 
-    # Crear una figura similar a plot_word_vectors_zoomable
     fig = go.Figure()
 
     for i, row in df.iterrows():
@@ -405,37 +390,29 @@ def plot_similar_words(word, top_n=50):
         showlegend=False
     )
 
-    # Habilitar zoom y panorámica
     fig.update_xaxes(type='linear')
     fig.update_yaxes(type='linear')
 
-    # Convertir la figura de Plotly a HTML
     plot_div = fig.to_html(full_html=False)
     return plot_div
 
-# Cargar el modelo de spaCy en español
 nlp = spacy.load("es_core_news_sm")
 
-# Preprocesar el texto y lemmatizar usando spaCy
 def preprocess_text(text):
     doc = nlp(text)
     tokens = [token.lemma_ for token in doc if not token.is_stop and not token.is_punct]
     return tokens
 
-# Función auxiliar para crear tagged_data
 def create_tagged_data(documentos):
     documentos_preprocesados = [preprocess_text(documento.contenido_preprocesado.lower()) for documento in documentos]
     return [TaggedDocument(words=doc, tags=[str(i)]) for i, doc in enumerate(documentos_preprocesados)]
 
-# Definir la función search_similar fuera de la vista
 def search_similar(model, documentos, query):
     query_tokens = preprocess_text(query)
     similar_documents = model.dv.most_similar(positive=[model.infer_vector(query_tokens)], topn=5)
 
-    # Filtrar resultados con similitud mayor o igual a 0.5
     filtered_documents = [(int(doc_id), similarity) for doc_id, similarity in similar_documents if similarity >= 0.5]
 
-    # Crear una lista de resultados
     results = []
     for doc_id, similarity in filtered_documents:
         document = documentos[doc_id]  # Obtener el documento correspondiente
@@ -447,6 +424,7 @@ def search_similar(model, documentos, query):
 
     return results
 
+# ALGORITMO DOC2VEC
 def doc2vec(request):
     # Obtener los documentos
     documentos = Documento.objects.all()
